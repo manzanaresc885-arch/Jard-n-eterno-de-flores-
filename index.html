@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Flores del Amor: un jardín interactivo de flores, mensajes y cartas de amor para Mari 💗">
+<meta name="keywords" content="flores del amor, jardín de amor, cartas de amor, flores para Mari">
+<meta property="og:title" content="Flores del Amor 🌹"><meta property="og:description" content="Un jardín eterno de flores y cartas de amor para Mari 💗"><meta property="og:type" content="website">
+<title>Flores del Amor 🌹</title>
+<style>
+:root{--bg:#050816;--fg:#f8e8ef;--card:rgba(255,255,255,.07);--acc:#fb7185;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root:not([data-theme=light]){color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:Georgia,'Playfair Display',serif;overflow-x:hidden}
+#c{position:fixed;inset:0;width:100%;height:100%;z-index:0}
+main{position:relative;z-index:1;max-width:640px;margin:0 auto;padding:24px 16px 80px}
+h1{font-size:2.1rem;text-align:center;margin:30px 0 4px;background:linear-gradient(90deg,#f9a8d4,#fb7185,#93c5fd);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{text-align:center;opacity:.8;margin:0 0 18px;font-style:italic}
+.card{background:var(--card);border:1px solid rgba(251,113,133,.25);border-radius:18px;padding:18px;margin:16px 0;backdrop-filter:blur(8px)}
+button,select,input,textarea{font:inherit;color:inherit}
+button{background:linear-gradient(135deg,#e11d48,#be185d);border:0;border-radius:999px;padding:10px 18px;cursor:pointer;margin:4px 4px 0 0}
+button.g{background:rgba(255,255,255,.12)}
+select,input,textarea{width:100%;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:10px;margin:6px 0}
+#q{font-size:1.15rem;line-height:1.6;min-height:5em}
+#letter{white-space:pre-wrap;line-height:1.7;margin-top:12px;max-height:60vh;overflow:auto}
+a.wa{display:inline-block;background:#16a34a;color:#fff;border-radius:999px;padding:10px 18px;text-decoration:none;margin-top:6px}
+.hint{text-align:center;font-size:.85rem;opacity:.6}
+</style></head><body>
+<canvas id="c"></canvas>
+<main>
+<h1>Flores del Amor 🌹</h1>
+<p class="sub">Un jardín eterno para Mari 💗 — toca la pantalla y haz florecer flores</p>
+<div class="card"><div id="q"></div>
+<button id="nq">Otro mensaje 💌</button><button class="g" id="mu">🎵 Música</button><button class="g" id="bl">🌸 Más flores</button></div>
+<div class="card"><b>Carta de amor para Mari</b>
+<select id="tone"></select>
+<input id="mem" placeholder="Un recuerdo especial (opcional)">
+<button id="gen">Escribir carta 💗</button>
+<div id="letter"></div><a class="wa" id="wa" style="display:none" target="_blank" rel="noopener">Enviar por WhatsApp</a></div>
+<p class="hint">Toca el jardín para plantar una flor ✨</p>
+</main>
+<script>
+const MARI_QUOTES = [
+    {
+        id: 1,
+        text: "Mari, desde el día en que entraste a mi vida, mi corazón aprendió a latir con un ritmo nuevo, lleno de luz, ternura y un amor que no conoce fronteras 💗✨🌹.",
+        category: "amor_eterno"
+    },
+    {
+        id: 2,
+        text: "Si me pidieran elegir el lugar más lindo de todo el universo, elegiría sin dudar perderme en el brillo dulce de tus ojitos, mi Mari amada 👀🌌💎.",
+        category: "ojos_y_sonrisa"
+    },
+    {
+        id: 3,
+        text: "Eres la razón de cada uno de mis suspiros, la melodía suave que apacigua mis tormentas y el sol que alumbra todos mis amaneceres, Mari mía ☀️💖🕊️.",
+        category: "poema"
+    },
+    {
+        id: 4,
+        text: "Te prometo cuidarte, abrazarte en tus días fríos y amarte con toda la fuerza de mi alma en cada instante de nuestra historia, hermosa Mari 💍🔒💞.",
+        category: "promesa"
+    },
+    {
+        id: 5,
+        text: "En este jardín infinito de rosas y estrellas, tú eres la flor más pura, radiante y bella que la vida pudo regalarme, mi princesa Mari 🌹👑✨.",
+        category: "poema"
+    },
+    {
+        id: 6,
+        text: "Mari hermosa, me tienes completamente enamorado; basta una sola de tus risas para hacerme olvidar cualquier tristeza del mundo 😍💘🥰.",
+        category: "coqueteo"
+    },
+    {
+        id: 7,
+        text: "Amarte a ti, Mari, es lo más fácil y maravilloso que he hecho jamás. Eres mi hogar, mi paz y mi tesoro más sagrado 🏡🤍✨.",
+        category: "amor_eterno"
+    },
+    {
+        id: 8,
+        text: "Tu sonrisa es como un rayo de primavera que florece hasta la tierra más árida; tenerte cerquita es mi mayor bendición, mi dulce Mari 🌸🍯💫.",
+        category: "ojos_y_sonrisa"
+    },
+    {
+        id: 9,
+        text: "Si el tiempo se detuviera cada vez que te miro, viviríamos en una eternidad perfecta donde solo existimos tú, yo y nuestro amor ⏳🌌💖.",
+        category: "poema"
+    },
+    {
+        id: 10,
+        text: "Prometo estar a tu lado en cada paso, celebrar tus sonrisas y ser tu refugio incondicional donde jamás te faltará amor ni dulzura, Mari 🛡️🫂💗.",
+        category: "promesa"
+    },
+    {
+        id: 11,
+        text: "No hay rosa roja, ni orquídea silvestre, ni flor azul cósmica que alcance la majestuosidad y dulzura de tu corazón, mi Mari bella 🥀💙👑.",
+        category: "poema"
+    },
+    {
+        id: 12,
+        text: "Confieso que cada noche le agradezco al destino por cruzarte en mi camino. Eres el sueño más bonito del que nunca quiero despertar 💭🌠💘.",
+        category: "amor_eterno"
+    },
+    {
+        id: 13,
+        text: "¿Sabías que cada vez que me escribes o me miras, mi corazón da un salto de emoción como si fuera la primera vez? Me encantas tanto, Mari 🫣💓✨.",
+        category: "coqueteo"
+    },
+    {
+        id: 14,
+        text: "Contigo aprendí que el amor verdadero no es una casualidad, es la certeza mágica de haber encontrado a la persona indicada. Te amo Mari 🤍🕊️💍.",
+        category: "amor_eterno"
+    },
+    {
+        id: 15,
+        text: "Tus caricias y tu voz tienen la magia de desarmar cualquier miedo mío. Eres mi ángel de la guarda terrenal, mi preciosa Mari 👼✨💗.",
+        category: "ojos_y_sonrisa"
+    },
+    {
+        id: 16,
+        text: "Si pudiera bajarte las estrellas del cielo, te armaría una corona con la constelación más brillante para recordarte que eres mi reina, Mari 🌌👑🌟.",
+        category: "poema"
+    },
+    {
+        id: 17,
+        text: "Prometo mirarte siempre con la misma devoción y ternura con la que hoy te veo, porque contigo descubrí el significado del amor sincero 🤝💘🌅.",
+        category: "promesa"
+    },
+    {
+        id: 18,
+        text: "Mari, eres mi pensamiento favorito al despertar y el último suspiro de amor que dedico antes de dormir 🌙🛌💖.",
+        category: "amor_eterno"
+    },
+    {
+        id: 19,
+        text: "Tienes una dulzura tan natural y una magia tan pura que iluminas cualquier lugar donde estás. Eres sencillamente perfecta para mí 😍🌹🦋.",
+        category: "coqueteo"
+    },
+    {
+        id: 20,
+        text: "No importa cuán grande sea el mundo o cuántos caminos existan; mi destino favorito siempre será regresar a tus brazos, mi amor Mari 🧭🗺️💞.",
+        category: "amor_eterno"
+    },
+    {
+        id: 21,
+        text: "Tu risa es la melodía que le hacía falta a mi vida para sonar en completa armonía. Gracias por llenar mis días de alegría y ternura 🎶🎻💗.",
+        category: "ojos_y_sonrisa"
+    },
+    {
+        id: 22,
+        text: "Como el mar abraza la orilla y el sol al amanecer, así deseo abrazarte hoy y por siempre, mi dulce Mari 🌊🌅💕.",
+        category: "poema"
+    },
+    {
+        id: 23,
+        text: "Prometo cuidarte como el tesoro más frágil y amarte con la valentía más indomable. Siempre estaré para ti, mi vida 🏰🛡️💖.",
+        category: "promesa"
+    },
+    {
+        id: 24,
+        text: "Me enamora cómo hablas, cómo piensas, cómo sueñas... Me enamoras entera, de la cabeza a los pies, mi inolvidable Mari 🥰🍓✨.",
+        category: "coqueteo"
+    },
+    {
+        id: 25,
+        text: "Eres mi hoy, mi mañana y todas las vidas que me queden por vivir. Te pertenezco con cada fibra de mi corazón, hermosa Mari 💫💍💗.",
+        category: "amor_eterno"
+    },
+    {
+        id: 26,
+        text: "No existe café en la mañana ni brisa marina que me despierte con tanta ilusión como leer un 'buenos días mi amor' tuyo, Mari ☕📱🌅.",
+        category: "ojos_y_sonrisa"
+    },
+    {
+        id: 27,
+        text: "Tus ojitos tienen ese brillo pícaro y tierno a la vez que hace que mi pulso se acelere a mil por hora cada vez que me miras 👀💓🔥.",
+        category: "coqueteo"
+    },
+    {
+        id: 28,
+        text: "Entre pétalos de loto y rosas celestiales, tú eres el verso más hondo de todos mis cantares, mi adorada Mari 🪷📜💖.",
+        category: "poema"
+    },
+    {
+        id: 29,
+        text: "Prometo ser tu refugio cuando llueva fuerte y la mano firme que sostenga la tuya cuando el camino se haga empinado, hermosa Mari ☔🤝🏰.",
+        category: "promesa"
+    },
+    {
+        id: 30,
+        text: "Si volviera a nacer mil veces, en las mil vidas saldría a buscarte hasta encontrarte y enamorarme de ti otra vez, Mari mía 🔄💫💘.",
+        category: "amor_eterno"
+    },
+    {
+        id: 31,
+        text: "Tienes esa magia que no se puede explicar con palabras; solo se puede sentir en el pecho cuando estás cerquita, mi Mari 🪄🤍✨.",
+        category: "ojos_y_sonrisa"
+    },
+    {
+        id: 32,
+        text: "Qué delicia es amarte y qué orgullo es tener a una mujer tan maravillosa, dulce y auténtica a mi lado. Eres mi todo, Mari 👸💐💕.",
+        category: "coqueteo"
+    },
+    {
+        id: 33,
+        text: "El sol le envidia a tu mirada la calidez, y la luna a tu rostro la serena lucidez. Te amo profundamente, mi dulce Mari 🌙☀️🌹.",
+        category: "poema"
+    },
+    {
+        id: 34,
+        text: "Prometo jamás dar por sentado un solo beso tuyo, ni una sola caricia, porque cada segundo a tu lado es un regalo sagrado ⏳💋🕊️.",
+        category: "promesa"
+    },
+    {
+        id: 35,
+        text: "Encontré en ti no solo a mi pareja, sino a mi mejor confidente, a mi amor verdadero y a la dueña absoluta de mi destino, Mari 🗝️🔒💖.",
+        category: "amor_eterno"
+    },
+    {
+        id: 36,
+        text: "Esa sonrisita que pones cuando te digo lo hermosa que eres es lo más tierno y adictivo de este mundo. Me derrites, Mari 🤤🫠💓.",
+        category: "coqueteo"
+    },
+    {
+        id: 37,
+        text: "Tus manos encajan en las mías como si hubieran sido moldeadas por el mismo artista del cielo. Nacimos para caminar juntos, Mari 🤲🎨✨.",
+        category: "ojos_y_sonrisa"
+    },
+    {
+        id: 38,
+        text: "Bajo la cúpula azul de mil constelaciones, se une mi latido al compás de tus pasiones. Eres mi musa eterna, Mari 🌌🎻💕.",
+        category: "poema"
+    },
+    {
+        id: 39,
+        text: "Prometo recordarte cada día lo valiosa y especial que eres, para que nunca olvides lo inmensamente amada que estás, mi reina Mari 👑💖🌷.",
+        category: "promesa"
+    },
+    {
+        id: 40,
+        text: "Eres la casualidad más bendita de mi destino, el amor que le dio luz y color a cada rincón de mi existencia, Mari hermosa 🌈🌟💍.",
+        category: "amor_eterno"
+    },
+    {
+        id: 41,
+        text: "Adoro cuando te ríes a carcajadas conmigo; es como si el mundo entero se llenara de música y confeti de colores 🎊🎶🥰.",
+        category: "ojos_y_sonrisa"
+    },
+    {
+        id: 42,
+        text: "Si ser tan linda fuera un delito, te condenaría a cadena perpetua en el castillo de mis abrazos diarios, señorita Mari 🏰🔒💋.",
+        category: "coqueteo"
+    },
+    {
+        id: 43,
+        text: "Florecen los girasoles buscando el calor del día, y yo busco tu mirada para colmarme de alegría, mi querida Mari 🌻☀️💞.",
+        category: "poema"
+    },
+    {
+        id: 44,
+        text: "Prometo ser leal a nuestro amor, regar este jardín de complicidad y amarte con ternura y pasión inagotable por siempre 💧🌹💍.",
+        category: "promesa"
+    },
+    {
+        id: 45,
+        text: "No existe lugar en la tierra donde me sienta tan pleno y seguro como descansando en tu pecho, escuchando tu corazón latir, Mari 🛌🕊️🤍.",
+        category: "amor_eterno"
+    },
+    {
+        id: 46,
+        text: "Tu carisma y tu elegancia natural eclipsan a cualquier joya; eres el diamante más puro de mi vida, mi Mari adorada 💎✨👸.",
+        category: "ojos_y_sonrisa"
+    },
+    {
+        id: 47,
+        text: "Me vuelves loco de amor, Mari; no hay instante en que no desee robarte un beso apretadito y llenarte de mimos incondicionales 🍓💋🔥.",
+        category: "coqueteo"
+    },
+    {
+        id: 48,
+        text: "En cada pétalo de esta flor azul cósmica late una promesa de devoción sincera hacia ti, mi bella Mari 🌌🥀💙.",
+        category: "poema"
+    },
+    {
+        id: 49,
+        text: "Prometo ser tu mayor admirador, aplaudir tus triunfos y levantarte con un beso si alguna vez tropiezas, mi compañera de vida 👏🫂💖.",
+        category: "promesa"
+    },
+    {
+        id: 50,
+        text: "El amor de mi vida tiene nombre propio: se llama Mari y es la mujer más dulce, valiente y radiante que jamás conocí 🌹💘👑.",
+        category: "amor_eterno"
+    },
+    {
+        id: 51,
+        text: "Verte despertar despeinada y sonriente es el espectáculo más bello y tierno que la vida me puede conceder cada mañana 🌅🧸💕.",
+        category: "ojos_y_sonrisa"
+    },
+    {
+        id: 52,
+        text: "Tienes ese no sé qué que me hipnotiza por completo; no puedo evitar mirarte con ojos enamorados a cada segundo, Mari 🫣😍💓.",
+        category: "coqueteo"
+    },
+    {
+        id: 53,
+        text: "Rosas rojas de pasión, tulipanes de ternura, para Mari mi ilusión, la que llena mi alma pura 🌹🌷💖.",
+        category: "poema"
+    },
+    {
+        id: 54,
+        text: "Prometo no soltar tu mano jamás, caminar a tu compás y mirarte con la misma emoción con la que hoy te digo te amo 🤝💍✨.",
+        category: "promesa"
+    },
+    {
+        id: 55,
+        text: "Mari, te amo con toda mi alma, con cada latido y con cada aliento. Eres el amor de mi vida, hoy, mañana y por siempre 💗💍🌹✨.",
+        category: "amor_eterno"
+    }
+];
+const REASON_LABELS = {
+    misunderstanding: 'El brillo inolvidable de sus ojos y su mirada tierna 💖',
+    distance: 'La dulzura infinita de su sonrisa que desarma mi alma ✨',
+    harsh_words: 'La nobleza de su corazón puro y su comprensión 🌸',
+    forgotten_event: 'La mágica conexión y complicidad de nuestro amor 💍',
+    general: 'Su forma tan perfecta de hacerme suspirar y enamorarme cada día más 💞',
+};
+function generateApologyLetter(config) {
+    const { friendName, cherishedMemory, reasonCategory, customReason, tone, relationshipDuration } = config;
+    const name = friendName.trim() || 'Mari';
+    const durationText = relationshipDuration ? ` durante este tiempo de amor compartido (${relationshipDuration})` : ' desde que iluminaste mi vida';
+    let attractionClause = '';
+    if (customReason && customReason.trim().length > 0) {
+        attractionClause = customReason.trim();
+    }
+    else {
+        switch (reasonCategory) {
+            case 'misunderstanding':
+                attractionClause = 'la luz tan infinita y cálida que irradias; basta una sola mirada de tus preciosos ojos para disipar cualquier tormenta y llenarme el pecho de una ternura desbordante';
+                break;
+            case 'distance':
+                attractionClause = 'la dulzura infinita de tu risa y esa sonrisa tuya que parece hecha de pétalos y estrellas, capaz de desarmarme entero y recordarme por qué te amo con locura';
+                break;
+            case 'harsh_words':
+                attractionClause = 'la inmensidad y pureza de tu corazón, que siempre me abraza sin juzgar y me hace sentir el ser humano más afortunado y amado de este mundo';
+                break;
+            case 'forgotten_event':
+                attractionClause = 'nuestra complicidad inquebrantable, esa magia que surge cada vez que nuestras manos se tocan y el universo entero parece conspirar a favor de nuestro amor';
+                break;
+            default:
+                attractionClause = 'la perfección absoluta de tu ser, esa belleza radiante que tienes tanto por fuera como en lo más hondo de tu alma, haciéndome suspirar de devoción en cada latido';
+        }
+    }
+    const memorySection = cherishedMemory.trim()
+        ? `Al cerrar los ojos y pensar en nosotros, siempre revive en mi alma aquel instante imborrable: "***${cherishedMemory.trim()}***". Recordarlo es sentir de nuevo ese nudo de emoción en el pecho, ese latido acelerado que me confirma que nací para encontrarte y amarte. Ese momento resume tu magia: pura, tierna y eterna.`
+        : `Al recordar cada instante que hemos compartido, una ola inmensa de amor y agradecimiento inunda mi pecho. Cada caricia, cada mirada cómplice a medianoche, cada suspiro susurrado al oído y cada promesa han construido el hogar más hermoso que jamás soñé: tu corazón.`;
+    if (tone === 'poetic') {
+        return `Para mi amada ${name}, dueña de cada uno de mis latidos 💗✨,
+
+Te escribo estas líneas con el corazón al desnudo y el alma desbordada de un amor puro y sincero. No hay en este mundo un tesoro más grande ni una bendición más sagrada que tenerte a mi lado${durationText}. 
+
+Desde que entraste a mi universo, aprendí que el amor verdadero no es una palabra, sino una certeza diaria: la de mirarte y saber que no quiero nada más en esta vida que hacerte inmensamente feliz. Mientras el mundo corre deprisa, tú eres mi remanso de paz, mi reina, la flor más hermosa y delicada que jamás floreció en la faz de la tierra.
+
+Lo que más me enamora y me cautiva de ti es, sin duda, ${attractionClause}. Tienes esa gracia celestial que embelesa todo a su paso y me hace dar gracias al cielo por el privilegio de amarte y ser correspondido.
+
+${memorySection}
+
+Quiero prometerte solemnemente hoy, ante este jardín eterno, que cuidaré de tu corazón como el tesoro más frágil y sagrado. Prometo ser tu abrazo firme en tus días grises, secar cada lágrima si alguna vez asoma, multiplicar cada una de tus risas y recordarte, todas las mañanas y todas las noches, lo infinitamente hermosa y amada que eres.
+
+He preparado especialmente para ti esta flor azul cósmica y este prado botánico que florece al ritmo de suaves acordes románticos. Cada pétalo que se abre simboliza un motivo por el que te amo, y cada corazón que se eleva hacia el firmamento lleva grabado tu nombre: Mari, mi amor eterno.
+
+Gracias por existir, por tu ternura sin medida y por enseñarme lo que significa amar con el alma.
+
+Con devoción infinita, admiración y todo mi amor por siempre,
+Tuyo/a en esta vida y en todas las que vengan. 💍💗🌹`;
+    }
+    if (tone === 'flirty') {
+        return `¡Hola, mi hermosa princesa ${name}! 😍💘✨
+
+Te escribo esta cartita porque ya no puedo disimular ni un segundo más lo perdidamente enamorado/a que estoy de ti. Es que, siendo totalmente sincero/a, ¡es físicamente imposible no derretirse con solo mirarte! Eres la mujer más hermosa, fascinante y encantadora de todo este planeta. 
+
+No hay día en que no me descubra sonriendo como un tonto/a a la pantalla al recibir un mensaje tuyo. Y es que lo que más me atrae y me vuelve loco/a de ti es ${attractionClause}. Tienes un poder inexplicable sobre mí: con una sola mirada coqueta y una sonrisita tuya, me tienes a tus pies, listo/a para bajarte la luna entera si me la pides.
+
+${memorySection}
+
+Te prometo que voy a ser la persona que más te consienta en este mundo: llenarte de besitos en la frente, robarte abrazos apretados, prepararte tus antojos y mirarte siempre con esos ojos de enamoramiento total que solo tú me provocas. ¡No te escapas de mí porque este amor es para toda la vida!
+
+Mira con atención la flor que florece en este jardín: cada destello y cada corazoncito flotante late al mismo ritmo que mi pecho cuando te pienso. Eres mi capricho favorito, mi sueño hecho realidad y la chica más preciosa del universo.
+
+Te mando un beso gigante en los labios de esos que dejan sin aliento y mil caricias tiernas.
+¡Te amo con locura, mi Mari hermosa! 💋🔥💓`;
+    }
+    if (tone === 'warm') {
+        return `Mi dulce y amada ${name} 🌸💗✨,
+
+Hoy quiero abrirte mi corazón para recordarte lo infinitamente especial y vital que eres para mí. No hay palabras suficientes en ningún idioma para expresar la calidez, la alegría y la paz profunda que traes a mi existencia${durationText}.
+
+Eres esa persona mágica que convierte cualquier día normal en un recuerdo dorado. Admiro tu nobleza, tu dulzura inagotable, la delicadeza con la que tratas a quienes amas y esa bondad que ilumina tus ojitos cada vez que sonríes. Eres un verdadero ángel en la tierra, mi Mari.
+
+Lo que más me cautiva y llena de ternura es ${attractionClause}. Estar contigo es como llegar a casa después de un largo viaje; es sentir que el corazón descansa en un remanso de amor y protección mutua.
+
+${memorySection}
+
+Prometo estar siempre a tu lado, celebrar cada uno de tus sueños, abrazarte fuerte cuando el mundo sea ruidoso y ser tu cómplice incondicional. Te amo no solo por lo perfecta que eres, sino por la persona tan feliz y completa que soy cuando estoy junto a ti.
+
+Esta rosa y estas flores florecen como un homenaje a tu alma pura. Tómate un respiro, escucha la música y siente este abrazo apretado que te envío a través de la distancia.
+
+Gracias por ser mi amor, mi refugio y mi luz constante.
+Con todo mi corazón y un amor infinito,
+Siempre tuyo/a. 🌷🤍✨`;
+    }
+    if (tone === 'nostalgic') {
+        return `Mi adorada ${name}, mi rayito de luna y amor de mi vida 🌙💖,
+
+Hoy me senté a contemplar el cielo y me invadió una marea de amor y nostalgia hermosa al revivir cada paso que nos ha traído hasta aquí. Qué regalo tan inmenso de la vida ha sido coincidir contigo y ver florecer este sentimiento tan profundo y sagrado${durationText}.
+
+A veces el día a día nos envuelve, pero hoy quiero detenerme a recordarte lo que jamás dejará de ser verdad: eres la mujer de mi vida, el milagro que le dio sentido a mis anhelos y el amor más grande que jamás conoceré. Tu ternura, tu paciencia y ese modo tan tuyo de entenderme con una sola mirada son bendiciones que atesoro en lo más hondo de mi ser.
+
+Me cautiva profundamente ${attractionClause}. Recordar cómo transformas mis días con tu sola presencia me hace suspirar de gratitud una y otra vez.
+
+${memorySection}
+
+Prometo seguir construyendo a tu lado un futuro lleno de amor, respeto y momentos mágicos. Te prometo un amor leal, de esos que maduran como el buen vino y que no se marchitan jamás, como esta rosa azul eterna que hoy te entrego.
+
+Mira cómo giran y bailan las flores ante tus ojos: cada destello lleva un suspiro mío que vuela hacia ti para abrigarte.
+
+Gracias por elegirme, por amarme y por ser el amor de mi vida, mi preciosa Mari.
+Con amor eterno y devoción absoluta,
+Por siempre y para siempre. 🌌💍💗`;
+    }
+    // default tone: 'sincere'
+    return `Para el amor de mi vida, mi adorada ${name} 💍💗,
+
+Con la mayor sinceridad y con el corazón palpitando de emoción, quiero escribirte estas palabras para declararte una vez más lo inmensamente agradecido y enamorado que estoy de ti. Eres la persona más maravillosa que ha pisado este mundo y el amor más puro y noble que he conocido.
+
+Me cautiva todo de ti: tu fuerza, tu elegancia natural, tu bondad infinita y, muy especialmente, ${attractionClause}. No necesitas hacer nada extraordinario para enamorarme; basta tu simple presencia para llenar de sol y primavera todo mi universo.
+
+${memorySection}
+
+Quiero reiterarte hoy mi compromiso eterno de amarte, respetarte y cuidarte todos los días de mi vida. Seré tu compañero leal, tu apoyo inquebrantable en las dificultades y tu motivo constante para sonreír.
+
+Esta rosa azul y este jardín floreciendo han sido creados con todo el amor de mi alma para ti, mi Mari. Que cada pétalo te recuerde lo valiosa, única e irreemplazable que eres para mí.
+
+Te amo con cada fibra de mi ser, hoy, mañana y por toda la eternidad.
+
+Con amor profundo e incondicional,
+Tuyo/a por siempre. 🌹💖✨`;
+}
+const APOLOGY_PRESETS = [
+    {
+        title: "Poética y Apasionada",
+        tone: "poetic",
+        description: "Versos exquisitos y devoción total que comparan su belleza con las rosas eternas y declaran amor inmortal."
+    },
+    {
+        title: "Romántica y Enamorada",
+        tone: "flirty",
+        description: "Un tono pícaro, cariñoso y fascinante para derretir a Mari, declarándole cuánto te gusta y te atrae."
+    },
+    {
+        title: "Dulce y Tierna",
+        tone: "warm",
+        description: "Un abrazo al alma lleno de gratitud, caricias verbales y palabras de amor acogedoras."
+    },
+    {
+        title: "Eterna y Nostálgica",
+        tone: "nostalgic",
+        description: "Rememorando el milagro de haberse conocido y la promesa de envejecer y amarse siempre."
+    },
+    {
+        title: "Sincera y Devota",
+        tone: "sincere",
+        description: "Una declaración profunda, madura y honesta con la promesa inquebrantable de amarla sin fin."
+    }
+];
+const REFLECTION_QUESTIONS = [
+    "¿Qué detalle de Mari hace que tu corazón se acelere cada vez que la ves?",
+    "Si tuvieras que describir lo que sientes al abrazarla con una sola palabra, ¿cuál sería?",
+    "¿Cuál es el recuerdo más dulce y romántico que guardas junto a Mari en tu pecho?",
+    "Si pudieras pedir un solo deseo para su futuro juntos, ¿cuál le prometerías hoy?"
+];
+const GENERATED_REASON_COMMENTS = {
+    misunderstanding: "Mari posee una luz inusualmente dulce y celestial; una sola sonrisa suya tiene el poder sagrado de abrigar el alma entera, borrar cualquier preocupación terrenal y recordarte que el amor verdadero es el regalo más grande de la vida. ✨💖",
+    distance: "Sus ojos son un remanso de ternura donde el tiempo se detiene. Cuando Mari te mira con amor, el universo entero calla para contemplar el milagro de dos almas que se reconocen y se juran lealtad eterna. 👀💘",
+    harsh_words: "En un mundo a menudo agitado y frío, Mari es un refugio cálido de amor incondicional, caricias puras y nobleza sincera. Cuidar su corazón es la misión más hermosa de tu existencia. 🌸🛡️",
+    forgotten_event: "La mágica complicidad que comparten está tejida con hilos invisibles de estrellas y latidos al unísono. Es ese amor único donde las palabras sobran y un simple abrazo lo cura todo. 💍💞",
+    general: "Mari representa la definición perfecta de la dulzura y la belleza. Cada caricia, cada risa y cada gesto suyo es una obra de arte que inspira amor eterno y devoción infinita. 💌🌹"
+};
+const DEEP_INTENSE_PHRASES_POOL = [
+    "Mari, eres mi milagro cotidiano, el latido que transforma todo el caos del mundo en una melodía de paz perfecta.",
+    "En un planeta de millones de almas, mis ojos y mi corazón solo te buscan a ti, mi dulce Mari.",
+    "Tu existencia es una caricia al alma, el recordatorio más dulce de que el amor verdadero sí existe.",
+    "Tus ojos tienen la magia de desarmarme entero; mirarte es encontrar el hogar donde siempre soñé vivir.",
+    "Si el cielo se quedara sin estrellas, me bastaría la luz radiante de tu sonrisa para guiar mi camino, Mari.",
+    "Ninguna rosa en la tierra, por hermosa que sea, podrá jamás igualar la pureza y nobleza de tu corazón.",
+    "Cada caricia tuya se queda grabada con fuego dulce en lo más profundo de mi pecho.",
+    "Eres ese refugio seguro donde puedo ser yo mismo y sentirme el ser más amado y feliz del universo.",
+    "Tu voz es la melodía más dulce que ha escuchado mi corazón; apacigua mis dudas y enciende mi pasión.",
+    "Me tienes completamente enamorado, Mari; amarte es el mayor honor y la alegría más grande de mi vida.",
+    "Prometo ser el guardián de tus sueños, el abrazo que te proteja de todo viento frío y la sonrisa que te acompañe siempre.",
+    "A veces te miro en silencio y el pecho se me llena de gratitud pura por el milagro de tenerte conmigo.",
+    "Eres la poesía más hermosa que el destino escribió en mi vida, y prometo leerte con amor cada nuevo día.",
+    "No hay distancia, ni tiempo, ni obstáculo capaz de apagar la llama viva y sagrada de lo que siento por ti, Mari.",
+    "Tu risa es la cura para cualquier tristeza; verte feliz es mi mayor meta y mi satisfacción más plena.",
+    "Me enamora tu ternura, me fascina tu inteligencia y me vuelve loco esa mirada coqueta que solo me regalas a mí.",
+    "A tu lado el tiempo vuela y al mismo tiempo se vuelve eterno; cada minuto contigo vale más que mil vidas sin ti.",
+    "Si tuviera que elegirte de nuevo entre un millón de vidas y un millón de personas, te elegiría a ti sin dudar un segundo.",
+    "Eres mi musa, mi princesa, mi compañera de vida y el amor más grande que jamás podré sentir.",
+    "Gracias por enseñarme lo dulce que es el amor sincero y por llenar mis días de caricias, risas y complicidad.",
+    "Mari, contigo hasta los días más grises se visten de rosa, sol y primavera.",
+    "Prometo amarte no solo en los momentos de dicha, sino abrazarte aún más fuerte en los días difíciles.",
+    "Tus abrazos tienen la virtud de reconstruir cualquier pedacito roto de mi alma.",
+    "Eres mi primer pensamiento al despertar y el suspiro enamorado que me acompaña antes de dormir.",
+    "Qué hermoso es mirarte y sentir que el corazón descansa, sabiendo que encontré a mi alma gemela en ti, Mari."
+];
+/**
+ * Clean Web Audio API Dembow Beat Loop Synthesizer
+ * Emulates the pure dembow rhythm of Mora's "Pensabas"
+ *
+ * Tempo: ~96 BPM
+ * Pattern: Pure Dembow Rhythm (No vocals, only the pure signature beat loop)
+ */
+let audioCtx = null;
+let isPlaying = false;
+let nextNoteTime = 0.0;
+let currentStep = 0;
+let timerId = null;
+const BPM = 96;
+const stepDuration = 60.0 / BPM / 4.0; // Duration of each 16th note step
+const scheduleAheadTime = 0.1; // How far ahead to schedule audio (seconds)
+const lookahead = 25.0; // How frequently to call scheduling function (milliseconds)
+// Helper to create a synthesised Kick Drum element
+function playKick(time, ctx) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    // Frequency Sweep (Punchy bass kick)
+    osc.frequency.setValueAtTime(160, time);
+    osc.frequency.exponentialRampToValueAtTime(45, time + 0.15);
+    // Volume envelope
+    gain.gain.setValueAtTime(1.0, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.22);
+    osc.start(time);
+    osc.stop(time + 0.25);
+}
+// Helper to create the classic Dembow Snare/Chak clapping sound
+// Recreated with filtered noise which sounds like a crisp urban percussion element
+function playSnare(time, ctx) {
+    // 1. Noise channel for crisp high-end
+    const bufferSize = ctx.sampleRate * 0.15; // 150ms of noise
+    const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+    }
+    const noiseNode = ctx.createBufferSource();
+    noiseNode.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.setValueAtTime(1000, time);
+    filter.Q.setValueAtTime(3.0, time);
+    const noiseGain = ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.5, time);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
+    noiseNode.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(ctx.destination);
+    // 2. Add an organic wooden click transient element
+    const bodyOsc = ctx.createOscillator();
+    const bodyGain = ctx.createGain();
+    bodyOsc.type = "triangle";
+    bodyOsc.frequency.setValueAtTime(320, time);
+    bodyOsc.frequency.exponentialRampToValueAtTime(120, time + 0.06);
+    bodyGain.gain.setValueAtTime(0.7, time);
+    bodyGain.gain.exponentialRampToValueAtTime(0.01, time + 0.07);
+    bodyOsc.connect(bodyGain);
+    bodyGain.connect(ctx.destination);
+    // Play
+    noiseNode.start(time);
+    bodyOsc.start(time);
+    noiseNode.stop(time + 0.15);
+    bodyOsc.stop(time + 0.08);
+}
+// Helper to add a subtle high-hat to lock the rhythm in
+function playHihat(time, ctx) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+    osc.type = "square";
+    filter.type = "highpass";
+    filter.frequency.setValueAtTime(8000, time);
+    gain.gain.setValueAtTime(0.08, time);
+    gain.gain.exponentialRampToValueAtTime(0.005, time + 0.035);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(time);
+    osc.stop(time + 0.04);
+}
+// The core dembow step sequencer
+// Decides which instrument to trigger at each step
+function scheduleStep(step, time, ctx) {
+    // THE COMPASS: DEMBOW GRID PATTERN
+    // K = Kick, S = Snare, H = Hihat
+    // Steps: 0, 1, 2,  3, 4, 5,  6, 7,  8, 9, 10, 11, 12, 13, 14, 15
+    // Beats: K, -, -,  S, -, -,  S, H,  K, -,  -,  S,  -,  -,  S,  H
+    const isKick = (step === 0 || step === 8);
+    const isSnare = (step === 3 || step === 6 || step === 11 || step === 14);
+    const isHihat = (step === 2 || step === 7 || step === 10 || step === 15);
+    if (isKick) {
+        playKick(time, ctx);
+    }
+    if (isSnare) {
+        playSnare(time, ctx);
+    }
+    if (isHihat) {
+        playHihat(time, ctx);
+    }
+}
+// Sequencer loop controller
+function scheduler() {
+    if (!audioCtx)
+        return;
+    while (nextNoteTime < audioCtx.currentTime + scheduleAheadTime) {
+        scheduleStep(currentStep, nextNoteTime, audioCtx);
+        // Advance time and cycle through the 16 steps
+        nextNoteTime += stepDuration;
+        currentStep = (currentStep + 1) % 16;
+    }
+    timerId = setTimeout(scheduler, lookahead);
+}
+// Public API
+function startAmbientMusic() {
+    if (typeof window === "undefined")
+        return;
+    if (isPlaying)
+        return;
+    try {
+        // Initialise audio context
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === "suspended") {
+            audioCtx.resume();
+        }
+        isPlaying = true;
+        nextNoteTime = audioCtx.currentTime + 0.05;
+        currentStep = 0;
+        scheduler();
+    }
+    catch (error) {
+        console.error("Synthesizer failed to spin up gracefully:", error);
+    }
+}
+function stopAmbientMusic() {
+    isPlaying = false;
+    if (timerId) {
+        clearTimeout(timerId);
+        timerId = null;
+    }
+    if (audioCtx) {
+        audioCtx.close().catch(() => { });
+        audioCtx = null;
+    }
+}
+
+const $=s=>document.getElementById(s);
+// quotes
+let qi=Math.floor(Math.random()*MARI_QUOTES.length);
+function showQ(){$('q').textContent=MARI_QUOTES[qi].text;qi=(qi+1)%MARI_QUOTES.length}
+$('nq').onclick=showQ;showQ();
+// letters
+APOLOGY_PRESETS.forEach((p,i)=>{const o=document.createElement('option');o.value=p.tone;o.textContent=p.title+' — '+p.description.slice(0,40)+'…';$('tone').appendChild(o)});
+$('gen').onclick=()=>{
+ const t=generateApologyLetter({friendName:'Mari',relationshipDuration:'',reasonCategory:'general',customReason:'',cherishedMemory:$('mem').value,tone:$('tone').value,promisesForFuture:[]}).replace(/\*\*\*/g,'');
+ $('letter').textContent=t;const w=$('wa');w.style.display='inline-block';w.href='https://wa.me/?text='+encodeURIComponent(t)};
+// music
+let on=false;$('mu').onclick=()=>{on=!on;on?startAmbientMusic():stopAmbientMusic();$('mu').textContent=on?'⏸ Pausar':'🎵 Música'};
+// garden
+const cv=$('c'),x=cv.getContext('2d');let W,H;
+function rs(){W=cv.width=innerWidth;H=cv.height=innerHeight}rs();addEventListener('resize',rs);
+const pal=[['#fb7185','#be123c'],['#f9a8d4','#db2777'],['#fda4af','#e11d48'],['#c4b5fd','#7c3aed'],['#93c5fd','#1d4ed8'],['#fde68a','#f59e0b']];
+const fl=[],hs=[],st=[];for(let i=0;i<90;i++)st.push({x:Math.random(),y:Math.random(),r:Math.random()*1.4,p:Math.random()*6});
+function plant(px,py){const c=pal[Math.random()<.25?4:Math.floor(Math.random()*pal.length)];fl.push({x:px,y:py,r:18+Math.random()*26,n:6+Math.floor(Math.random()*5),c,t:0,rot:Math.random()*6,gy:H})}
+function bloom(){for(let i=0;i<7;i++)plant(Math.random()*W,H*.45+Math.random()*H*.5)}
+function flower(f){const g=Math.min(1,f.t/90),e=1-Math.pow(1-g,3),r=f.r*e;
+ x.strokeStyle='#15803d';x.lineWidth=3;x.beginPath();x.moveTo(f.x,f.gy);x.quadraticCurveTo(f.x+10,(f.gy+f.y)/2,f.x,f.y+(f.gy-f.y)*(1-e));x.stroke();
+ const cy=f.y+(f.gy-f.y)*(1-e);x.save();x.translate(f.x,cy);x.rotate(f.rot+f.t*.002);
+ for(let l=1;l>=0;l--)for(let i=0;i<f.n;i++){x.save();x.rotate(i/f.n*6.283+l*.3);const s=r*(l?.6:1);
+  const gr=x.createRadialGradient(0,-s*.5,1,0,-s*.5,s);gr.addColorStop(0,f.c[0]);gr.addColorStop(1,f.c[1]);x.fillStyle=gr;
+  x.beginPath();x.ellipse(0,-s*.55,s*.32,s*.55,0,0,6.283);x.fill();x.restore()}
+ x.fillStyle='#fde68a';x.beginPath();x.arc(0,0,r*.14,0,6.283);x.fill();x.restore()}
+function heart(h){x.font=h.s+'px serif';x.globalAlpha=h.a;x.fillText('💗',h.x,h.y);x.globalAlpha=1}
+function loop(t){x.clearRect(0,0,W,H);const bg=x.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#050816');bg.addColorStop(1,'#2a0a1f');x.fillStyle=bg;x.fillRect(0,0,W,H);
+ x.fillStyle='#fff';st.forEach(s=>{x.globalAlpha=.4+.4*Math.sin(t/700+s.p);x.beginPath();x.arc(s.x*W,s.y*H,s.r,0,6.283);x.fill()});x.globalAlpha=1;
+ fl.forEach(f=>{f.t++;flower(f)});if(fl.length>70)fl.shift();
+ if(Math.random()<.04)hs.push({x:Math.random()*W,y:H+20,s:14+Math.random()*16,a:.7,v:.6+Math.random()});
+ hs.forEach(h=>{h.y-=h.v;h.x+=Math.sin(h.y/30)*.5;h.a-=.0007;heart(h)});for(let i=hs.length-1;i>=0;i--)if(hs[i].a<=0)hs.splice(i,1);
+ requestAnimationFrame(loop)}
+cv.addEventListener('pointerdown',e=>plant(e.clientX,e.clientY));
+document.body.addEventListener('pointerdown',e=>{if(e.target===document.body||e.target.tagName==='MAIN')plant(e.clientX,e.clientY)});
+$('bl').onclick=bloom;bloom();requestAnimationFrame(loop);
+</script></body></html>
